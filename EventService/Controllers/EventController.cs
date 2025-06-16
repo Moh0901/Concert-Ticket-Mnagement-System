@@ -11,18 +11,15 @@ namespace EventService.Controllers
     public class EventController : ControllerBase
     {
         private readonly IEventRepository _eventRepository;
+        private readonly EventMessageProducer _eventMessageProducer;
 
-        public EventController(IEventRepository eventRepository)
+
+        public EventController(IEventRepository eventRepository, EventMessageProducer eventMessageProducer)
         {
             _eventRepository = eventRepository;
-        }
+            _eventMessageProducer = eventMessageProducer;
 
-        //[HttpPost("create")]
-        //public async Task<IActionResult> CreateEvent([FromBody] Event concertEvent)
-        //{
-        //    var result = await _eventRepository.CreateEvent(concertEvent);
-        //    return Ok(result);
-        //}
+        }
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateEvent([FromBody] Event concertEvent)
@@ -49,11 +46,10 @@ namespace EventService.Controllers
         public async Task<IActionResult> CreateEvent([FromBody] Event concertEvent)
         {
             var result = await _eventRepository.CreateEvent(concertEvent);
-
-            var producer = new EventMessageProducer();
-            producer.PublishMessage("EventCreatedQueue", $"Event '{concertEvent.Name}' scheduled at {concertEvent.Venue} on {concertEvent.Date}");
+            _eventMessageProducer.PublishMessage($"Event '{concertEvent.Name}' scheduled at {concertEvent.Venue} on {concertEvent.Date}");
             return Ok(result);
         }
+
 
     }
 }

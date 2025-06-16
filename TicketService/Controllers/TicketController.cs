@@ -45,28 +45,3 @@ namespace TicketService.Controllers
         }
     }
 }
-
-
-[Route("api/tickets")]
-[ApiController]
-public class TicketController : ControllerBase
-{
-    private readonly ITicketRepository _ticketRepository;
-
-    public TicketController(ITicketRepository ticketRepository, RabbitMqService rabbitMqService)
-    {
-        _ticketRepository = ticketRepository;
-        _rabbitMqService = rabbitMqService;
-    }
-
-    [HttpPost("updateAvailability")]
-    public async Task<IActionResult> UpdateTicketAvailability(int eventId, int ticketId, bool isReserved, bool isPurchased)
-    {
-        var result = await _ticketRepository.UpdateTicketAvailability(eventId, ticketId, isReserved, isPurchased);
-        if (!result) return BadRequest("Ticket not found or invalid event");
-
-        _rabbitMqService.PublishMessage("TicketUpdatedQueue", $"Ticket {ticketId} updated - Reserved: {isReserved}, Purchased: {isPurchased}");
-
-        return Ok("Ticket availability updated successfully");
-    }
-}

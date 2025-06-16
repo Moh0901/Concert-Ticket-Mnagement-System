@@ -26,7 +26,6 @@ builder.Services.AddSingleton(sp =>
 });
 builder.Services.AddHostedService<RabbitMqConsumer>();
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
